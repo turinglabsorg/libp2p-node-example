@@ -1,0 +1,36 @@
+{
+  "name": "libp2p-node-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/turinglabsorg/libp2p-node-example.git"
+  },
+  "author": "",
+  "type": "module",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/turinglabsorg/libp2p-node-example/issues"
+  },
+  "homepage": "https://github.com/turinglabsorg/libp2p-node-example#readme",
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^8.0.1",
+    "@libp2p/bootstrap": "^2.0.0",
+    "@libp2p/mplex": "^5.0.0",
+    "@libp2p/tcp": "^3.0.3",
+    "@libp2p/websockets": "^3.0.2",
+    "it-length-prefixed": "^8.0.2",
+    "it-map": "^1.0.6",
+    "it-pipe": "^2.0.4",
+    "libp2p": "^0.38.0",
+    "multiaddr": "^10.0.1",
+    "uint8arrays": "^3.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
