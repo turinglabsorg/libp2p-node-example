@@ -20,13 +20,16 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^8.0.1",
     "@libp2p/bootstrap": "^2.0.0",
+    "@libp2p/floodsub": "^3.0.5",
     "@libp2p/mplex": "^5.0.0",
     "@libp2p/tcp": "^3.0.3",
     "@libp2p/websockets": "^3.0.2",
+    "crypto": "^1.0.1",
     "it-length-prefixed": "^8.0.2",
     "it-map": "^1.0.6",
     "it-pipe": "^2.0.4",
     "libp2p": "^0.38.0",
+    "lodash": "^4.17.21",
     "multiaddr": "^10.0.1",
     "uint8arrays": "^3.1.0"
   },

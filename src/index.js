@@ -5,12 +5,15 @@ import { Noise } from '@chainsafe/libp2p-noise'
 import { Mplex } from '@libp2p/mplex'
 import { multiaddr } from 'multiaddr'
 import { Bootstrap } from '@libp2p/bootstrap'
+import { FloodSub } from '@libp2p/floodsub'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
 import fs from 'fs'
+import _ from 'lodash'
+import crypto from 'crypto'
 
 export function streamToConsole(stream) {
     try {
@@ -41,21 +44,29 @@ function startStreaming(node, remoteAddr) {
         async function () {
             try {
                 const stream = await node.dialProtocol(remoteAddr, '/echo/1.0.0')
-                const message = '[' + new Date().getTime() + '] hey from ' + process.argv[2]
-                console.log('>', message)
-                pipe(
-                    [uint8ArrayFromString(message)],
-                    (source) => map(source, (string) => uint8ArrayFromString(string)),
-                    lp.encode(),
-                    stream.sink
-                )
-                setTimeout(function () {
-                    try {
-                        stream.reset()
-                    } catch (e) {
-                        console.log("Can't close stream..")
+                const bytes = _.random(1, 64, 0)
+                crypto.randomBytes(bytes, async (err, buffer) => {
+                    if (err) {
+                        // Prints error
+                        console.log(err);
+                        return;
                     }
-                }, 1)
+                    const message = '[' + new Date().getTime() + '] [' + process.argv[2] + '] ' + buffer.toString('hex')
+                    // console.log('>', message)
+                    pipe(
+                        [uint8ArrayFromString(message)],
+                        (source) => map(source, (string) => uint8ArrayFromString(string)),
+                        lp.encode(),
+                        stream.sink
+                    )
+                    setTimeout(function () {
+                        try {
+                            stream.reset()
+                        } catch (e) {
+                            console.log("Can't close stream..")
+                        }
+                    }, 1)
+                });
             } catch (e) {
                 console.log("[STREAM FAILED] stopping streaming to peer.")
                 console.log(e.message)
@@ -69,6 +80,7 @@ function startStreaming(node, remoteAddr) {
 }
 
 async function startNode() {
+    // Taking bootstrap nodes
     const bootstrapers = []
     const nodes = fs.readdirSync('./nodes')
     for (let k in nodes) {
@@ -83,6 +95,7 @@ async function startNode() {
         }
     }
     try {
+        // Creating node
         const node = await createLibp2p({
             addresses: {
                 listen: ['/ip4/127.0.0.1/tcp/0/ws']
@@ -93,6 +106,7 @@ async function startNode() {
             connectionManager: {
                 autoDial: true,
             },
+            pubsub: new FloodSub(),
             peerDiscovery: [
                 new Bootstrap({
                     interval: 60e3,
