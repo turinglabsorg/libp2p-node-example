@@ -14,9 +14,17 @@ import { pipe } from 'it-pipe'
 import fs from 'fs'
 import _ from 'lodash'
 import crypto from 'crypto'
+import Jetty from 'jetty'
+import art from 'ascii-art'
 
-const time = 60 // Test time in seconds
-const throttle = 20
+const jetty = new Jetty(process.stdout)
+// Configure test from here
+const time = 120 // Test time in seconds
+const show = false // show messages in console or not
+const throttle = 10 // How many ms it will wait between one message and another
+const protocol = '/echo/1.0.0' // Protocol name
+const size = 256 // Size of exchanged random buffer
+// 
 let started = false
 let starting = false
 let relayed = []
@@ -24,9 +32,9 @@ let received = []
 let resets = 0
 let exchanged = 0
 let successful = 0
-let errors = 0
-const protocol = '/echo/1.0.0'
 let node
+let elapsed = 0
+const bootstrapers = returnBootstrappers()
 
 function handleStream(stream) {
     try {
@@ -44,7 +52,9 @@ function handleStream(stream) {
                     // Output the data as a utf8 string
                     if (received.indexOf(msg.toString()) === -1) {
                         received.push(msg.toString())
-                        console.log('> ' + msg.toString().replace('\n', ''))
+                        if (show) {
+                            console.log('> ' + msg.toString().replace('\n', ''))
+                        }
                         if (relayed.indexOf(msg.toString()) === -1) {
                             relayed.push(msg.toString())
                             relayMessage(msg)
@@ -81,7 +91,11 @@ function relayMessage(message) {
                 }, throttle / 3)
             } catch (e) {
                 // Uncomment next line to see why stream failed
-                console.log("[STREAM FAILED]", e.message)
+                if (show) {
+                    console.log("[STREAM FAILED]", e.message)
+                }
+                await node.hangUp(multiaddr(active[k]))
+                resets++
                 success = false
             }
         }
@@ -92,7 +106,7 @@ function relayMessage(message) {
 }
 
 function startStreaming() {
-    const bytes = _.random(128, 128, 0)
+    const bytes = _.random(size, size, 0)
     crypto.randomBytes(bytes, async (err, buffer) => {
         if (err) {
             // Prints error
@@ -103,18 +117,7 @@ function startStreaming() {
         let sending = true
         while (sending) {
             let response = await relayMessage(message)
-            if (!response) {
-                resets++
-                errors++
-                if (!starting && errors > 10) {
-                    errors = 0
-                    started = false
-                    sending = false
-                    // Reset node if fails too much
-                    await node.stop()
-                    startNode()
-                }
-            } else {
+            if (response) {
                 exchanged += bytes
                 successful++
                 sending = false
@@ -146,8 +149,6 @@ function returnBootstrappers() {
 async function startNode() {
     if (!starting && !started) {
         starting = true
-        // Taking bootstrap nodes
-        const bootstrapers = returnBootstrappers()
         // Creating node
         let peerId
         if (fs.existsSync('./nodes/' + process.argv[2] + '_id')) {
@@ -183,8 +184,10 @@ async function startNode() {
             console.log('libp2p has started')
 
             node.connectionManager.addEventListener('peer:connect', async (connection) => {
-                console.log('--')
-                console.log('Connected to %s', connection.detail.remotePeer) // Log connected peer
+                if (show) {
+                    console.log('--')
+                    console.log('Connected to %s', connection.detail.remotePeer) // Log connected peer
+                }
             })
             // print out listening addresses
             console.log('listening on addresses:')
@@ -207,7 +210,7 @@ async function startNode() {
             )
 
             // Starting test stream
-            console.log('Starting test..')
+            console.log('Starting test, results will show up in 5 seconds..')
             startStreaming()
 
             started = true
@@ -225,11 +228,27 @@ setTimeout(function () {
     startNode()
 }, Math.floor(Math.random() * 1000))
 
+// Print progresses
 setTimeout(function () {
-    console.log('Exchanged bytes:', exchanged)
-    console.log('Successful relays:', successful)
-    console.log('Resets:', resets)
-    console.log('Messages received:', received.length)
-    console.log('Messages relayed:', relayed.length)
+    setInterval(function () {
+        jetty.clear();
+        console.log('Testing libp2p for ' + time + ' seconds, elapsed ' + elapsed, 's.')
+        console.log('Using ' + (bootstrapers.length + 1) + ' nodes.')
+        console.log('Exchange packages of ' + size + ' size.')
+        console.log('Throttle between messages is:', throttle + 'ms.')
+        console.log('--')
+        console.log('Exchanged bytes:', exchanged)
+        console.log('Successful relays:', successful)
+        console.log('Connection resets:', resets)
+        console.log('Messages received:', received.length)
+        console.log('Messages relayed:', relayed.length)
+        console.log('Rate KB/s:', (exchanged / elapsed / 1000).toFixed(2))
+    }, 500)
+}, 5000)
+
+setInterval(function () {
+    elapsed++
+}, 1000)
+setTimeout(function () {
     process.exit()
-}, time * 1500)
+}, time * 1000)
