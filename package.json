@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev:stream": "nodemon src/stream.js",
+    "dev:pubsub": "nodemon src/pubsub.js"
   },
   "repository": {
     "type": "git",
@@ -18,10 +19,11 @@
   },
   "homepage": "https://github.com/turinglabsorg/libp2p-node-example#readme",
   "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^4.0.0",
     "@chainsafe/libp2p-noise": "^8.0.1",
     "@libp2p/bootstrap": "^2.0.0",
-    "@libp2p/floodsub": "^3.0.5",
     "@libp2p/mplex": "^5.0.0",
+    "@libp2p/peer-id-factory": "^1.0.18",
     "@libp2p/tcp": "^3.0.3",
     "@libp2p/websockets": "^3.0.2",
     "crypto": "^1.0.1",
