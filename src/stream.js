@@ -1,4 +1,3 @@
-import process, { connected } from 'node:process'
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@libp2p/websockets'
 import { Noise } from '@chainsafe/libp2p-noise'
