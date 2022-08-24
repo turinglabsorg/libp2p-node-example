@@ -235,7 +235,7 @@ setTimeout(function () {
         jetty.clear();
         console.log('Testing libp2p for ' + time + ' seconds, elapsed ' + elapsed, 's.')
         console.log('Using ' + (bootstrapers.length + 1) + ' nodes.')
-        console.log('Exchange packages of ' + size + ' size.')
+        console.log('Exchange packages of ' + size + ' bytes.')
         console.log('Throttle between messages is:', throttle + 'ms.')
         console.log('--')
         console.log('Exchanged bytes:', exchanged)
