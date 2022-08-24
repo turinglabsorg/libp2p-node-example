@@ -21,18 +21,21 @@ const time = 120 // Test time in seconds
 const show = false // show messages in console or not
 const throttle = 10 // How many ms it will wait between one message and another
 const protocol = '/echo/1.0.0' // Protocol name
-const size = 256 // Size of exchanged random buffer
-// 
-let started = false
-let starting = false
+const size = 2048 // Size of exchanged random buffer
+
+// Node variables
+let node
+const bootstrapers = returnBootstrappers()
 let relayed = []
 let received = []
+
+// Useful variables for testing
+let started = false
+let starting = false
 let resets = 0
 let exchanged = 0
 let successful = 0
-let node
 let elapsed = 0
-const bootstrapers = returnBootstrappers()
 
 function handleStream(stream) {
     try {
@@ -249,4 +252,4 @@ setInterval(function () {
 }, 1000)
 setTimeout(function () {
     process.exit()
-}, time * 1000)
+}, (time + 1) * 1000)
