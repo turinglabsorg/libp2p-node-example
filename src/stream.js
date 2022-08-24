@@ -15,7 +15,6 @@ import fs from 'fs'
 import _ from 'lodash'
 import crypto from 'crypto'
 import Jetty from 'jetty'
-import art from 'ascii-art'
 
 const jetty = new Jetty(process.stdout)
 // Configure test from here
